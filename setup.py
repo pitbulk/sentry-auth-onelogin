@@ -15,7 +15,7 @@ tests_require = [
 ]
 
 install_requires = [
-    'sentry>=7.1.0',
+    'sentry>=7.2.0',
 ]
 
 setup(
@@ -31,7 +31,7 @@ setup(
     zip_safe=False,
     install_requires=install_requires,
     tests_require=tests_require,
-    extras_require={'test': tests_require},
+    extras_require={'tests': tests_require},
     include_package_data=True,
     entry_points={
         'sentry.plugins': [
