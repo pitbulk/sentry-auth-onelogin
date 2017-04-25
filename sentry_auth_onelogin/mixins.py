@@ -51,8 +51,8 @@ class SamlMixin(object):
                 "NameIDFormat": "urn:oasis:names:tc:SAML:2.0:nameid-format:emailAddress",
                 # Usually x509cert and privateKey of the SP are provided by files placed at
                 # the certs folder. But we can also provide them with the following parameters
-                'x509cert' => '',
-                'privateKey' => ''
+                'x509cert': '',
+                'privateKey': ''
             },
 
             # Identity Provider Data that we want connected with our SP.
@@ -79,7 +79,7 @@ class SamlMixin(object):
                     "binding": "urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect"
                 },
                 # Public x509 certificate of the IdP
-                "x509cert": connector_cert,
+                "x509cert": connector_cert
                 # /*
                 #  *  Instead of use the whole x509cert you can use a fingerprint
                 #  *  (openssl x509 -noout -fingerprint -in "idp.crt" to generate it)
@@ -102,7 +102,7 @@ class SamlMixin(object):
                     "displayname": "Sentry",
                     "url": "https://www.getsentry.com"
                 }
-            },
+            }
         }
 
     def prepare_saml_request(self, request):

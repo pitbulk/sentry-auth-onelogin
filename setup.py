@@ -16,6 +16,7 @@ tests_require = [
 
 install_requires = [
     'sentry>=7.2.0',
+    'python3-saml>=1.2.3',
 ]
 
 setup(
