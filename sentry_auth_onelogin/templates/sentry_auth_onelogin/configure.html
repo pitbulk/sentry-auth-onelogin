@@ -1,20 +1,29 @@
-{% extends "sentry/bases/modal.html" %}
-
 {% load crispy_forms_tags %}
 {% load i18n %}
 
-{% block title %}{% trans "Login" %} | {{ block.super }}{% endblock %}
+<div class="pull-right"><a target="_blank" href="{{ sp_metadata_url }}">{% trans "Access to SP metadata" %}</a></div>
 
-{% block wrapperclass %}windowed-small{% endblock %}
+<h3>Onelogin Settings</h3>
 
-{% block footer %}{% endblock %}
+<h4>Onelogin IdP Data</h4>
+{% if form.errors %}
+    <div class="alert alert-block alert-error">{% trans "Please correct the errors below." %}</div>
+{% endif %}
 
-{% block content %}
-  <section class="body">
-    <h3>Configure OneLogin</h3>
+{{ form|as_crispy_errors }}
 
-    <pre>{{ config }}</pre>
+{% for field in form %}
+    {{ field|as_crispy_field }}
+{% endfor %}
 
-    {% include "sentry/partial/_form.html" %}
-  </section>
-{% endblock %}
+<h4>Attribute Mapping</h4>
+
+{% if form2.errors %}
+    <div class="alert alert-block alert-error">{% trans "Please correct the errors below." %}</div>
+{% endif %}
+
+{{ form2|as_crispy_errors }}
+
+{% for field in form2 %}
+    {{ field|as_crispy_field }}
+{% endfor %}
