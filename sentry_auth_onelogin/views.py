@@ -65,10 +65,8 @@ class SelectIdP(AuthView):
             id_or_metadata_url = request.POST['id_or_metadata_url']
 
             # Get metadata url if an app_id was provided
-            try:
+            if id_or_metadata_url.isdigit():
                 id_or_metadata_url = ONELOGIN_METADATA_URL_PREFIX + id_or_metadata_url
-            except:
-                pass
 
             validate_url = URLValidator()
             try:
