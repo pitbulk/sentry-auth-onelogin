@@ -65,18 +65,13 @@ class SelectIdP(AuthView):
             id_or_metadata_url = request.POST['id_or_metadata_url']
 
             # Get metadata url if an app_id was provided
-            if id_or_metadata_url.isdigit():
+            if id_or_metadata_url and id_or_metadata_url.isdigit():
                 id_or_metadata_url = ONELOGIN_METADATA_URL_PREFIX + id_or_metadata_url
 
             validate_url = URLValidator()
             try:
                 validate_url(id_or_metadata_url)
                 url = id_or_metadata_url
-            except:
-                pass
-
-            if url:
-                error_url = True
                 try:
                     data = OneLogin_Saml2_IdPMetadataParser.parse_remote(url)
 
@@ -88,8 +83,9 @@ class SelectIdP(AuthView):
                             helper.bind_state('contact', request.user.email)
                             return helper.next_step()
                 except:
-                    pass
-            error_value = True
+                    error_url = True
+            except:
+                error_value = True
 
         return self.respond('sentry_auth_onelogin/select-idp.html', {
             'error_value': error_value,
