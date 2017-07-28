@@ -1,6 +1,7 @@
 from __future__ import absolute_import, print_function
 
 from django import forms
+from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.core.validators import URLValidator
 
@@ -82,9 +83,9 @@ class SelectIdP(AuthView):
                             helper.bind_state('idp', idp_data)
                             helper.bind_state('contact', request.user.email)
                             return helper.next_step()
-                except:
+                except Exception:
                     error_url = True
-            except:
+            except ValidationError:
                 error_value = True
 
         return self.respond('sentry_auth_onelogin/select-idp.html', {

@@ -1,11 +1,17 @@
 {% extends "sentry/bases/auth.html" %}
+{% load sentry_assets %}
+{% load i18n %}
 
 {% block auth_main %}
   <div class="box">
     <div class="box-content with-padding">
-      <h3>Register Onelogin IdP data</h3>
+      <h3>{% trans "Register Onelogin IdP data" %}</h3>
 
-      <div class="help-block">Introduce the ID of your Onelogin app connector<br> or the url of its metadata</div>
+      <div class="help-block">
+      {% blocktrans %} 
+        Introduce the ID of your Onelogin app connector<br> or the url of its metadata
+      {% endblocktrans %}
+      </div>
 
     <form action="" method="post">
         {% csrf_token %}
@@ -14,16 +20,16 @@
         {% endif %}
 
         {% if error_url %}
-            <div class="alert alert-block alert-error">There was an error trying to retrieve and parse the metadata.</div>
+            <div class="alert alert-block alert-error">{% trans "There was an error trying to retrieve and parse the metadata." %}</div>
         {% endif %}
         {% if error_value %}
-            <div class="alert alert-block alert-error">The value is invalid, ID number or url expected.</div>
+            <div class="alert alert-block alert-error">{% trans "The value is invalid, ID number or url expected." %}</div>
         {% endif %}
         <fieldset class="align-right">
             <input required="required" class="textinput textInput form-control" id="id_or_metadata_url" name="id_or_metadata_url" type="text" value="{{ id_or_metadata_url }}" />
             <input type="hidden" name="provider" value="onelogin" />
             <div class="form-actions-samlidp">
-            <button type="submit" class="btn btn-primary" name="action_save">Continue</button>
+            <button type="submit" class="btn btn-primary" name="action_save">{% trans "Continue" %}</button>
           </div>
         </fieldset>
     </form>
@@ -32,9 +38,10 @@
   </div>
 
   <div class="box">
-    <a id="onelogin-help">Read about how obtain OneLogin IdP metadata</a>
+    <a id="onelogin-help">{% trans "Read about how obtain OneLogin IdP metadata" %}</a>
 
     <div id="onelogin-description" style="display:none;">
+    {% blocktrans %}
         <h4>Obtain OneLogin IDP Metadata</h4>
         <p>As an SSO provisioning step, you need to provide the OneLogin identity provider metadata to Sentry. This metadata is specific to your OneLogin account.<br>
         To retrieve the identity provider metadata from OneLogin you can provide the id of the app, or provide the url of the metadata. <b>In order to get the URL:</b></p>
@@ -45,23 +52,20 @@
             <li>Click the <b>More actions</b> button.</li>
             <li>Copy the "SAML metadata" link.</li>
         </ol>
-        <img src="https://support.prontoforms.com/hc/en-us/article_attachments/219153688/2016-12-13-OneLogin06.png">
+    {% endblocktrans %}
+        <img src='{% absolute_asset_url "onelogin" "images/onelogin_idp_metadata.png" %}'>
         <br>
     </div>
   <div>
 
 <script>
-function changeToggleIcon(a) {
-    if (a.text() == 'Close help') {
-        a.text('Read about how obtain OneLogin IdP metadata');
-    } else {
-        a.text('Close help');
-    }
-}
-
 $("#onelogin-help").click(function(){
     $("#onelogin-description").toggle();
-    changeToggleIcon($(this));
+    if ($("#onelogin-description").is(':visible')) {
+        $(this).text('Close help');
+    } else {
+        $(this).text('Read about how obtain OneLogin IdP metadata');
+    }
 });
 </script>
 
