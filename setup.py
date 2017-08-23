@@ -2,31 +2,27 @@
 """
 sentry-auth-onelogin
 ====================
-
-:copyright: (c) 2014 GetSentry LLC
-:license:
 """
 from setuptools import setup, find_packages
 
 
-tests_require = [
-    'pytest',
-    'mock',
+install_requires = [
+    'python3-saml>=1.2.6'
 ]
 
-install_requires = [
-    'sentry>=7.2.0',
+tests_require = [
+    'flake8>=2.0,<2.1',
 ]
 
 setup(
     name='sentry-auth-onelogin',
-    version='0.1.0',
-    author='David Cramer',
-    author_email='dcramer@gmail.com',
+    version='0.1.1.dev',
+    author='Sentry',
+    author_email='support@getsentry.com',
     url='https://www.getsentry.com',
-    description='OneLogin authentication provider for Sentry',
+    description='Onelogin SAML SSO provider for Sentry',
     long_description=__doc__,
-    license='',
+    license='Apache 2.0',
     packages=find_packages(exclude=['tests']),
     zip_safe=False,
     install_requires=install_requires,
@@ -34,9 +30,9 @@ setup(
     extras_require={'tests': tests_require},
     include_package_data=True,
     entry_points={
-        'sentry.plugins': [
-            'auth_onelogin = sentry_auth_onelogin.plugin:OneLoginAuthPlugin',
-         ],
+        'sentry.apps': [
+            'auth_onelogin = sentry_auth_onelogin',
+        ],
     },
     classifiers=[
         'Intended Audience :: Developers',

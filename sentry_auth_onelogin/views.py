@@ -1,55 +1,95 @@
 from __future__ import absolute_import, print_function
 
 from django import forms
-from django.conf import settings
-from sentry.auth import AuthView, Provider
+from django.core.exceptions import ValidationError
+from django.core.urlresolvers import reverse
+from django.core.validators import URLValidator
 
-from .mixins import SamlMixin
+from onelogin.saml2.idp_metadata_parser import OneLogin_Saml2_IdPMetadataParser
 
-from onelogin.saml2.auth import OneLogin_Saml2_Auth
-from onelogin.saml2.settings import OneLogin_Saml2_Settings
-from onelogin.saml2.utils import OneLogin_Saml2_Utils
+from sentry.auth.view import AuthView, ConfigureView
+from sentry.auth.providers.saml2 import SAML2Provider
+from sentry.utils.http import absolute_uri
 
-
-ERR_ACS_FAILURE = 'There was an error authenticating you with the provider.'
-
-
-class SamlSettingsForm(forms.Form):
-    pass
+from .constants import ONELOGIN_METADATA_URL_PREFIX
 
 
+class OneloginSAML2ConfigureView(ConfigureView):
+    def dispatch(self, request, organization, auth_provider):
+        if request.POST:
+            data = request.POST
+            form = SAMLForm(data)
+            form2 = AttributeMappingForm(data)
+            if form.is_valid():
+                idp_data = SAML2Provider.extract_idp_data_from_form(form)
+                auth_provider.config['idp'] = idp_data
+                auth_provider.save()
+            if form2.is_valid():
+                attribute_mapping_data = SAML2Provider.extract_attribute_mapping_from_form(form2)
+                auth_provider.config['attribute_mapping'] = attribute_mapping_data
+                auth_provider.save()
+        else:
+            data = auth_provider.config['idp']
+            form = SAMLForm(data)
 
-class SamlAcs(AuthView, SamlMixin):
-    def __init__(self, config):
-        self.config = config
+            data2 = None
+            if 'attribute_mapping' in auth_provider.config:
+                data2 = auth_provider.config['attribute_mapping']
+            form2 = AttributeMappingForm(data2)
 
+        sp_metadata_url = absolute_uri(reverse('sentry-auth-organization-saml-metadata', args=[organization.slug]))
 
-class SamlConfigure(AuthView, SamlMixin):
-    def __init__(self, config):
-        self.config = config
-
-    def handle(self, request, helper):
-        access_token = helper.fetch_state('data')['access_token']
-        org_list = self.client.get_org_list(access_token)
-
-        form = ConfigureForm(org_list, request.POST or None)
-        if form.is_valid():
-            org_id = form.cleaned_data['org']
-            org = [o for o in org_list if org_id == str(o['id'])][0]
-            helper.bind_state('org', org)
-            return helper.next_step()
-
-        return self.respond('sentry_auth_onelogin/configure.html', {
+        return self.render('sentry_auth_onelogin/configure.html', {
+            'sp_metadata_url': sp_metadata_url,
             'form': form,
-            'org_list': org_list,
+            'form2': form2,
         })
 
 
-class SamlRequest(AuthView, SamlMixin):
-    def __init__(self, config):
-        self.config = config
+class SAMLForm(forms.Form):
+    idp_entityid = forms.CharField(label='Onelogin Entity ID', help_text="Issuer URL")
+    idp_sso_url = forms.URLField(label='Onelogin Single Sign On URL', help_text="SAML 2.0 Endpoint (HTTP)")
+    idp_slo_url = forms.URLField(label='Onelogin Single Log Out URL', required=False, help_text="SLO Endpoint (HTTP)")
+    idp_x509cert = forms.CharField(label='Onelogin x509 public certificate', widget=forms.Textarea, help_text="X.509 Certificate")
 
+
+class AttributeMappingForm(forms.Form):
+    attribute_mapping_email = forms.CharField(label='Email')
+    attribute_mapping_firstname = forms.CharField(label='First Name', required=False)
+
+
+class SelectIdP(AuthView):
     def handle(self, request, helper):
-        auth = self.build_auth(request, self.config)
-        redirect_uri = absolute_uri(self.get_next_url())
-        return self.redirect(auth.login(redirect_uri))
+        error_value = error_url = False
+        id_or_metadata_url = url = ''
+        if 'action_save' in request.POST:
+            id_or_metadata_url = request.POST['id_or_metadata_url']
+
+            # Get metadata url if an app_id was provided
+            if id_or_metadata_url and id_or_metadata_url.isdigit():
+                id_or_metadata_url = ONELOGIN_METADATA_URL_PREFIX + id_or_metadata_url
+
+            validate_url = URLValidator()
+            try:
+                validate_url(id_or_metadata_url)
+                url = id_or_metadata_url
+                try:
+                    data = OneLogin_Saml2_IdPMetadataParser.parse_remote(url)
+
+                    if data and 'idp' in data:
+                        idp_data = SAML2Provider.extract_idp_data_from_parsed_data(data)
+                        form2 = SAMLForm(idp_data)
+                        if form2.is_valid():
+                            helper.bind_state('idp', idp_data)
+                            helper.bind_state('contact', request.user.email)
+                            return helper.next_step()
+                except Exception:
+                    error_url = True
+            except ValidationError:
+                error_value = True
+
+        return self.respond('sentry_auth_onelogin/select-idp.html', {
+            'error_value': error_value,
+            'error_url': error_url,
+            'id_or_metadata_url': id_or_metadata_url
+        })
