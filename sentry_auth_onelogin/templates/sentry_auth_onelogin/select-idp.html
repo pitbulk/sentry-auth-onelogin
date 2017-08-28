@@ -8,7 +8,7 @@
       <h3>{% trans "Register Onelogin IdP data" %}</h3>
 
       <div class="help-block">
-      {% blocktrans %} 
+      {% blocktrans %}
         Introduce the ID of your Onelogin app connector<br> or the url of its metadata
       {% endblocktrans %}
       </div>
@@ -53,7 +53,7 @@
             <li>Copy the "SAML metadata" link.</li>
         </ol>
     {% endblocktrans %}
-        <img src='{% absolute_asset_url "onelogin" "images/onelogin_idp_metadata.png" %}'>
+        <img src='{% asset_url "sentry_auth_onelogin" "images/onelogin_idp_metadata.png" %}'>
         <br>
     </div>
   <div>
@@ -70,3 +70,4 @@ $("#onelogin-help").click(function(){
 </script>
 
 {% endblock %}
+
