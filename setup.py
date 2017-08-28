@@ -31,7 +31,7 @@ setup(
     include_package_data=True,
     entry_points={
         'sentry.apps': [
-            'auth_onelogin = sentry_auth_onelogin',
+            'sentry_auth_onelogin = sentry_auth_onelogin',
         ],
     },
     classifiers=[
