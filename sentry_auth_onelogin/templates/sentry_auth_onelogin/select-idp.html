@@ -19,9 +19,17 @@
             <input type="hidden" name="plugin" value="{{ plugin.slug }}" />
         {% endif %}
 
-        {% if error_url %}
-            <div class="alert alert-block alert-error">{% trans "There was an error trying to retrieve and parse the metadata." %}</div>
+        {% if error_url or missing_values %}
+            <div class="alert alert-block alert-error">{% trans "There was an error trying to retrieve and parse the metadata." %}
+
+            {% if missing_values %}
+
+                <br><br>{% trans "Not able to retrieve valid values for the following required fields" %}:<br><i>{{ missing_values|join:", " }}</i>
+            {% endif %}
+
+            </div>
         {% endif %}
+
         {% if error_value %}
             <div class="alert alert-block alert-error">{% trans "The value is invalid, ID number or url expected." %}</div>
         {% endif %}
@@ -38,7 +46,7 @@
   </div>
 
   <div class="box">
-    <a id="onelogin-help">{% trans "Read about how obtain OneLogin IdP metadata" %}</a>
+    <a id="onelogin-help">Read about how obtain OneLogin IdP metadata</a>
 
     <div id="onelogin-description" style="display:none;">
     {% blocktrans %}
@@ -59,6 +67,7 @@
   <div>
 
 <script>
+
 $("#onelogin-help").click(function(){
     $("#onelogin-description").toggle();
     if ($("#onelogin-description").is(':visible')) {
@@ -70,4 +79,3 @@ $("#onelogin-help").click(function(){
 </script>
 
 {% endblock %}
-

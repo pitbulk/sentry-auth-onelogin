@@ -2,6 +2,6 @@ from __future__ import absolute_import
 
 from sentry.auth import register
 
-from .provider import OneloginSAML2Provider
+from .provider import OneLoginSAML2Provider
 
-register('onelogin', OneloginSAML2Provider)
+register('onelogin', OneLoginSAML2Provider)
